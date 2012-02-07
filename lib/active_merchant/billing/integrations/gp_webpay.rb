@@ -38,6 +38,14 @@ module ActiveMerchant #:nodoc:
           Return.new(query_string)
         end
 
+        def self.payment_service_url(order, account, options = {})
+          params = []
+          Helper.new(order, account, options).form_fields.each do |field, value|
+            params << "#{field}=#{CGI::escape(value)}"
+          end
+          return "#{self.service_url}?#{params.join("&")}"
+        end
+
       end
     end
   end
