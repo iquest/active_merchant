@@ -25,10 +25,12 @@ module ActiveMerchant #:nodoc:
           mapping :md, 'MD'
 
           def initialize(order, account, options = {})
+            resp_url = options.delete(:url)
             super
             add_field(mappings[:depositflag], '1')
             add_field(mappings[:operation], 'CREATE_ORDER')
-            add_field(mappings[:url], ActiveMerchant::Billing::Integrations::GpWebpay.response_url)
+            resp_url = ActiveMerchant::Billing::Integrations::GpWebpay.response_url if resp_url.nil?
+            add_field(mappings[:url], resp_url)
             add_digest
           end
 
@@ -46,7 +48,7 @@ module ActiveMerchant #:nodoc:
             add_field(mappings[:amount], cents)
           end
 
-          private
+        private
           
           REQUIRED_FIELDS = [:account, :operation, :order, :amount, :currency, :depositflag, :url]
           #DIGEST_FIELDS = [:account, :operation, :order, :amount, :currency, :depositflag, :merordernum, :url, :description, :md]
