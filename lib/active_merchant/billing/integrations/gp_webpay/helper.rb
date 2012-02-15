@@ -3,6 +3,8 @@ module ActiveMerchant #:nodoc:
     module Integrations #:nodoc:
       module GpWebpay
         class Helper < ActiveMerchant::Billing::Integrations::Helper
+          include Common
+
           CURRENCY_MAPPING = {
             'EUR' => '978',
             'CZK' => '203',
@@ -64,18 +66,6 @@ module ActiveMerchant #:nodoc:
             end
           end
 
-          def sign_message(data)
-            private_key_data = File.read(ActiveMerchant::Billing::Integrations::GpWebpay.private_key)
-            private_key  = OpenSSL::PKey::RSA.new(private_key_data, ActiveMerchant::Billing::Integrations::GpWebpay.password)
-            signature = private_key.sign(OpenSSL::Digest::SHA1.new, data.gsub('\s', ''))
-            return ActiveSupport::Base64.encode64(signature).gsub(/\n/, '')
-          end
-
-          def verify_message(data, signature)
-            cert_file = File.read(ActiveMerchant::Billing::Integrations::GpWebpay.public_key)
-            public_key = OpenSSL::X509::Certificate.new(cert_file).public_key
-            return public_key.verify(OpenSSL::Digest::SHA1.new, ActiveSupport::Base64.decode64(signature), data)
-          end
 
         end
       end
