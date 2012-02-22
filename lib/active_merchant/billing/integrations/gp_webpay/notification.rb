@@ -6,8 +6,8 @@ module ActiveMerchant #:nodoc:
           include Common
 
           def complete?
-            pr_code == "0" && sr_code == "0"
-          end 
+            digest_ok? && digest1_ok? && pr_code == "0" && sr_code == "0"
+          end
 
           def pr_code
             params['PRCODE']
@@ -49,13 +49,31 @@ module ActiveMerchant #:nodoc:
             params['DIGEST1']
           end 
 
+          def digest_ok?
+            params['DIGEST_OK']
+          end
+
+          def digest1_ok?
+            params['DIGEST1_OK']
+          end
+
           private
 
           def parse(get_params)
-            # TODO: DIGEST & DIGEST1 check
             @params = get_params
+            @params["DIGEST_OK"] = digest_verified?
+            @params["DIGEST1_OK"] = digest1_verified?
           end
 
+          def digest_verified?
+            verify_params = [operation, order_id, pr_code, sr_code, message].join('|')
+            return verify_response(verify_params, digest)
+          end
+
+          def digest1_verified?
+            verify_params = [operation, order_id, pr_code, sr_code, message, ActiveMerchant::Billing::Integrations::GpWebpay.merchant_id].join('|')
+            return verify_response(verify_params, digest1)
+          end
         end
       end
     end
